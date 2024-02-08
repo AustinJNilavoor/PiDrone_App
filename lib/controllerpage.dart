@@ -1,46 +1,51 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pidrone/joystick/joystick.dart';
-import 'package:pidrone/main.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ControllerPage extends StatefulWidget {
-  final WebSocketChannel? channel;
-  final List? joyStickData;
-  const ControllerPage({Key? key, this.channel, this.joyStickData})
-      : super(key: key);
+  const ControllerPage({super.key});
 
   @override
-  _ControllerPageState createState() => _ControllerPageState();
+  State<ControllerPage> createState() => _ControllerPageState();
 }
 
 class _ControllerPageState extends State<ControllerPage> {
-  int lx = 100;
-  int ly = 100;
-  int rx = 100;
-  int ry = 100;
+  int lx = 0;
+  int ly = 0;
+  int rx = 0;
+  int ry = 0;
   String arm = 'ARM';
   Color armcolor = Colors.blue;
   Color textcolor = Colors.white;
   String height = '0 M';
   String rssi = '0.00 DB';
   String flighttime = '00:00';
-  bool connected = false;
+  bool connected = true;
   int throttle = 1000;
   double batteryVoltage = 4.20;
   Color button1color = Colors.blue;
   Color button2color = Colors.blue;
   String errortext = ' ';
 
+  final channel = WebSocketChannel.connect(
+    Uri.parse('ws://192.168.4.1:8888'),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   void dispose() {
+    channel.sink.close();
+    // channel.stream.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    int batteryLevel = 0;
-
     return SafeArea(
       child: Scaffold(
         body: Padding(
@@ -51,8 +56,28 @@ class _ControllerPageState extends State<ControllerPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton(onPressed: () {}, child: const Text('Mode')),
                   ElevatedButton(
+                      style: ButtonStyle(
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        )),
+                        backgroundColor: MaterialStateProperty.all(Colors.blue),
+                        foregroundColor:
+                            MaterialStateProperty.all(Colors.white),
+                      ),
+                      onPressed: () {},
+                      child: const Text('Mode')),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      )),
+                      backgroundColor: MaterialStateProperty.all(Colors.blue),
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                    ),
                     onPressed: () {},
                     child: const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 10),
@@ -70,33 +95,53 @@ class _ControllerPageState extends State<ControllerPage> {
                           borderRadius: BorderRadius.circular(5.0),
                           color: const Color(0x15000000)),
                       child: Center(
-                        child: Text(
-                          '$batteryLevel %',
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15),
+                        child: StreamBuilder(
+                          stream: channel.stream,
+                          builder: (context, snapshot) {
+                            return Text(
+                              snapshot.hasData ? '${snapshot.data} %' : '0 %',
+                              style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15),
+                            );
+                          },
                         ),
+                        // child: Text(
+                        //   '$batteryLevel %',
+                        //   style: const TextStyle(
+                        //       color: Colors.black,
+                        //       fontWeight: FontWeight.bold,
+                        //       fontSize: 15),
+                        // ),
                       ),
                     ),
                   ),
                   ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          if (connected) {
-                            connected = false;
-                            button1color = Colors.blue;
-                            arm = 'ARM';
-                            armcolor = Colors.blue;
-                          } else {
-                            connected = true;
-                            button1color = Colors.green;
-                          }
-                        });
-                      },
                       style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(button1color)),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        )),
+                        backgroundColor:
+                            MaterialStateProperty.all(button1color),
+                        foregroundColor:
+                            MaterialStateProperty.all(Colors.white),
+                      ),
+                      onPressed: () {
+                        // setState(() {
+                        //   if (connected) {
+                        //     connected = false;
+                        //     button1color = Colors.blue;
+                        //     arm = 'ARM';
+                        //     armcolor = Colors.blue;
+                        //   } else {
+                        //     connected = true;
+                        //     button1color = Colors.green;
+                        //   }
+                        // });
+                      },
                       child: const Text('Aux 1')),
                   ElevatedButton(
                     onPressed: () {
@@ -109,8 +154,13 @@ class _ControllerPageState extends State<ControllerPage> {
                       });
                     },
                     style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(button2color)),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      )),
+                      backgroundColor: MaterialStateProperty.all(button2color),
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                    ),
                     child: const Text('Aux 2'),
                   ),
                 ],
@@ -137,11 +187,9 @@ class _ControllerPageState extends State<ControllerPage> {
                         Joystick(
                           listener: (details) {
                             setState(() {
-                              lx = ((details.x) * 100 + 100).toInt();
-                              ly = (-(details.y) * 100 + 100).toInt();
-                              // sendData(1);
-                              joyStickData[0] = lx;
-                              joyStickData[1] = ly;
+                              lx = (((details.x) * 100) + 200).toInt();
+                              ly = (-((details.y) * 100) + 200).toInt();
+                              sendData(channel);
                             });
                           },
                         ),
@@ -195,11 +243,9 @@ class _ControllerPageState extends State<ControllerPage> {
                         Joystick(
                           listener: (details) {
                             setState(() {
-                              rx = ((details.x) * 100 + 100).toInt();
-                              ry = (-(details.y) * 100 + 100).toInt();
-                              // sendData(2);
-                              joyStickData[2] = rx;
-                              joyStickData[3] = ry;
+                              rx = (((details.x) * 100) + 200).toInt();
+                              ry = (-((details.y) * 100) + 200).toInt();
+                              sendData(channel);
                             });
                           },
                         ),
@@ -351,9 +397,33 @@ class _ControllerPageState extends State<ControllerPage> {
     });
   }
 
-  void sendData(int i) {
-    // List<int> data = [lx, ly, rx, ry, i];
-    // widget.channel!.sink.add(data.toString());
-    // print(data);
+  void reconnect(channel) {
+    // channel.sink.close();
+    setState(() {
+      channel = WebSocketChannel.connect(Uri.parse('ws://192.168.4.1:8888'));
+    });
+
+    sendData(channel);
+    //  connect(channel);
+  }
+
+  // void connect(channel) async {
+  //   try {
+  //     await channel.ready;
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  //   // channel.stream.listen((message) {
+
+  //   print("Send");
+  // }
+
+  void sendData(channel) {
+    // Timer.periodic(const Duration(milliseconds: 50), (Timer timer) {
+    if (arm == 'ARMED') {
+      channel.sink.add("$lx$ly$rx$ry");
+    }
+    // print(joyStickData);
+    // });
   }
 }

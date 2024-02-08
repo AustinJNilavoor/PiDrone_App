@@ -1,27 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pidrone/controllerpage.dart';
-import 'package:web_socket_channel/io.dart';
-import 'dart:async';
-
-List<int> joyStickData = [0,0,0,0];
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  // print(name);
-  const oneSec = Duration(milliseconds: 50);
-
-  Timer.periodic(oneSec, (Timer timer) {
-    // print(joyStickData);
-     });
 }
-
-double battLowVolatage = 2.50;
-String ipaddress = '192.168.4.1';
-// final ipaddress = Uri.parse('192.168.4.1') ;
-final channel = IOWebSocketChannel.connect("ws://$ipaddress:81/");
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -32,10 +17,36 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ControllerPage(
-        channel: channel,
-        joyStickData : joyStickData,
-      ),
+      home: const ConnectPage(),
     );
+  }
+}
+
+class ConnectPage extends StatelessWidget {
+  const ConnectPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+        child: Scaffold(
+      body: Center(
+          child: ElevatedButton(
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          )),
+          backgroundColor: MaterialStateProperty.all(Colors.blue),
+          foregroundColor: MaterialStateProperty.all(Colors.white),
+        ),
+        child: const Text('Connect'),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ControllerPage()),
+          );
+        },
+      )),
+    ));
   }
 }
