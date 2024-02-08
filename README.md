@@ -9,7 +9,7 @@ PiDrone is a versatile Flutter application designed for seamless control of dron
 - **Telemetry Data**: Access real-time telemetry data to monitor the drone's status during flight.
 
 ## Screenshots
-<img src="Image_1.jpg" width=30% height=30%>
+<img src="Image_1.jpg" height=30%>
 
 ## Getting Started
 
