@@ -42,6 +42,6 @@ PiDrone is open-source software licensed under the [MIT license](LICENSE).
 
 ## Contact
 
-For any questions or feedback regarding PiDrone, feel free to reach out to us at [your-email@example.com](mailto:austinjnilavoor.nja@gmail.com).
+For any questions or feedback regarding PiDrone, feel free to reach out to us at [austinjnilavoor.nja@gmail.com](mailto:austinjnilavoor.nja@gmail.com).
 
 Happy flying with PiDrone! 🚁✨
